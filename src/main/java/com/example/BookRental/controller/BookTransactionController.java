@@ -1,6 +1,7 @@
 package com.example.BookRental.controller;
 
 import com.example.BookRental.dto.BookTransactionDto;
+import com.example.BookRental.dto.TransactionDto;
 import com.example.BookRental.exception.CustomException;
 import com.example.BookRental.model.Book;
 import com.example.BookRental.model.RENT_TYPE;
@@ -33,7 +34,7 @@ public class BookTransactionController {
 //    }
 
     @GetMapping("/getAll")
-    @PreAuthorize("hasAuthority('LIBRARIAN')")
+    @PreAuthorize("hasAuthority('LIBRARIAN') or hasAnyAuthority('ADMIN')")
     public ResponseEntity<?> getAllBookTransaction() {
         return bookTransactionService.getAllBookTransaction();
     }
@@ -44,14 +45,14 @@ public class BookTransactionController {
         return bookTransactionService.getBookTransactionById(id);
     }
 
-//    @PutMapping("/update/{id}")
-//    public ResponseEntity<?> updateBookTransaction(@PathVariable("id") Long id, @Valid @RequestBody BookTransactionDto bookTransactionDto, BindingResult result) {
-//        checkValidation(result);
-//        bookTransactionDto.setId(id);
-//        return bookTransactionService.updateBookTransaction(bookTransactionDto);
-//    }
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateBookTransaction(@PathVariable("id") Long id, @Valid @RequestBody TransactionDto bookTransactionDto, BindingResult result) {
+        checkValidation(result);
+        bookTransactionDto.setId(id);
+        return bookTransactionService.updateBookTransaction(bookTransactionDto);
+    }
 
-    @PutMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('LIBRARIAN')")
     public ResponseEntity<?> deleteBookTransaction(@PathVariable("id") Long id) {
         return bookTransactionService.deleteBookTransaction(id);

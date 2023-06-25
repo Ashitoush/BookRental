@@ -102,6 +102,8 @@ public class AuthorServiceImpl implements AuthorService {
             throw new CustomException("Author With ID: " + id + " not found");
         }
 
+        author.setBooks(null);
+
         Integer count = authorMapper.deleteAuthor(id);
 
         if (count == 0) {

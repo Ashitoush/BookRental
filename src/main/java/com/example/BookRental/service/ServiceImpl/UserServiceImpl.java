@@ -21,6 +21,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<Object> createUser(UserDto userDto) {
         User user = userConverter.toEntity(userDto);
+        user.setEmail(user.getEmail().toLowerCase());
 
         if (userRepo.save(user) == null) {
             throw new CustomException("Error while creating user: " + user.getName());

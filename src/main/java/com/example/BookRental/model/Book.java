@@ -53,4 +53,7 @@ public class Book {
 
     @ManyToMany
     private List<Author> authors;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    private List<BookTransaction> bookTransactionList;
 }

@@ -4,7 +4,9 @@ import com.example.BookRental.converter.CategoryConverter;
 import com.example.BookRental.dto.CategoryDto;
 import com.example.BookRental.exception.CustomException;
 import com.example.BookRental.mapper.CategoryMapper;
+import com.example.BookRental.model.Book;
 import com.example.BookRental.model.Category;
+import com.example.BookRental.repo.BookRepo;
 import com.example.BookRental.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryConverter categoryConverter;
     private final CategoryMapper categoryMapper;
+    private final BookRepo bookRepo;
 
     @Override
     public ResponseEntity<Object> insertCategory(CategoryDto categoryDto) {
@@ -88,6 +91,12 @@ public class CategoryServiceImpl implements CategoryService {
 
         if (category == null) {
             throw new CustomException("Category with ID: " + id + " not found");
+        }
+
+        List<Book> bookList = bookRepo.findByCategoryId(id);
+
+        for (Book book : bookList) {
+            book.setCategory(null);
         }
 
         categoryMapper.deleteCategory(id);

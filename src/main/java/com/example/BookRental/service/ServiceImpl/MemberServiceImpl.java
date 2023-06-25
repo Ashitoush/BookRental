@@ -4,7 +4,10 @@ import com.example.BookRental.converter.MemberConverter;
 import com.example.BookRental.dto.MemberDto;
 import com.example.BookRental.exception.CustomException;
 import com.example.BookRental.mapper.MemberMapper;
+import com.example.BookRental.model.BookTransaction;
 import com.example.BookRental.model.Member;
+import com.example.BookRental.model.RENT_TYPE;
+import com.example.BookRental.repo.BookTransactionRepo;
 import com.example.BookRental.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberConverter memberConverter;
     private final MemberMapper memberMapper;
+    private final BookTransactionRepo bookTransactionRepo;
 
     @Override
     public ResponseEntity<Object> insertMember(MemberDto memberDto) {
@@ -82,6 +86,16 @@ public class MemberServiceImpl implements MemberService {
         if(member == null) {
             throw new CustomException("Member with ID: " + id + " not found");
         }
+
+        List<BookTransaction> bookTransactionList = bookTransactionRepo.findByMemberId(member.getId());
+
+        for (BookTransaction bookTransaction : bookTransactionList) {
+            if (bookTransaction.getRentStatus() == RENT_TYPE.RENT) {
+                throw new CustomException("Member cannot be deleted until all the books are returned");
+            }
+        }
+
+        member.setBookTransaction(null);
 
         Integer count = memberMapper.deleteMember(id);
 

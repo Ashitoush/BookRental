@@ -2,11 +2,13 @@ package com.example.BookRental.service.ServiceImpl;
 
 import com.example.BookRental.converter.BookTransactionConverter;
 import com.example.BookRental.dto.BookTransactionDto;
+import com.example.BookRental.dto.TransactionDto;
 import com.example.BookRental.exception.CustomException;
 import com.example.BookRental.mapper.MemberMapper;
 import com.example.BookRental.model.Book;
 import com.example.BookRental.model.BookTransaction;
 import com.example.BookRental.model.Member;
+import com.example.BookRental.model.RENT_TYPE;
 import com.example.BookRental.repo.BookRepo;
 import com.example.BookRental.repo.BookTransactionRepo;
 import com.example.BookRental.service.BookTransactionService;
@@ -62,7 +64,7 @@ public class BookTransactionServiceImpl implements BookTransactionService {
     }
 
     @Override
-    public ResponseEntity<Object> updateBookTransaction(BookTransactionDto bookTransactionDto) {
+    public ResponseEntity<Object> updateBookTransaction(TransactionDto bookTransactionDto) {
         Optional<BookTransaction> bookTransaction = bookTransactionRepo.findById(bookTransactionDto.getId());
         if (!bookTransaction.isPresent()) {
             throw new CustomException("Book Transaction with ID: " + bookTransactionDto.getId() + " not found");
@@ -78,11 +80,18 @@ public class BookTransactionServiceImpl implements BookTransactionService {
             throw new CustomException("Member ID: " + bookTransactionDto.getMemberId() + " not found");
         }
 
-        bookTransaction.get().setId(bookTransactionDto.getId());
-        bookTransaction.get().setCode(bookTransactionDto.getCode());
-        bookTransaction.get().setFromDate(bookTransactionDto.getFromDate());
-        bookTransaction.get().setToDate(bookTransactionDto.getToDate());
-        bookTransaction.get().setRentStatus(bookTransactionDto.getRentStatus());
+        LocalDate localDate = bookTransaction.get().getFromDate().plusDays(bookTransactionDto.getDays());
+        if (bookTransaction.get().getToDate().isBefore(localDate)) {
+            bookTransaction.get().setToDate(localDate);
+        } else {
+            throw new CustomException("The specified day for the rent duration is lower than the day provided earlier");
+        }
+
+//        bookTransaction.get().setId(bookTransactionDto.getId());
+//        bookTransaction.get().setCode(bookTransactionDto.getCode());
+//        bookTransaction.get().setFromDate(bookTransactionDto.getFromDate());
+//        bookTransaction.get().setToDate(bookTransactionDto.getToDate());
+//        bookTransaction.get().setRentStatus(bookTransactionDto.getRentStatus());
         bookTransaction.get().setBook(book.get());
         bookTransaction.get().setMember(member);
 
@@ -153,6 +162,14 @@ public class BookTransactionServiceImpl implements BookTransactionService {
         if (!bookTransaction.isPresent()) {
             throw new CustomException("Book Transaction with ID: " + id + " not found");
         }
+
+        if (bookTransaction.get().getRentStatus() == RENT_TYPE.RENT) {
+            throw new CustomException("Book Transaction cannot be deleted until the book is returned");
+        }
+
+        bookTransaction.get().setBook(null);
+        bookTransaction.get().setMember(null);
+        bookTransactionRepo.save(bookTransaction.get());
 
         bookTransactionRepo.delete(bookTransaction.get());
         return new ResponseEntity<>("Book Transaction with ID: " + id + " deleted successfully", HttpStatus.OK);

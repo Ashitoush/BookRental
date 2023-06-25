@@ -30,7 +30,7 @@ public class BookTransaction {
     private LocalDate toDate;
 
     @Column(name = "rent_status")
-//    @Enumerated(value = EnumType.STRING)
+    @Enumerated(value = EnumType.STRING)
     private RENT_TYPE rentStatus;
 
     @ManyToOne

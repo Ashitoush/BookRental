@@ -7,10 +7,9 @@ import com.example.BookRental.helper.PhotoHelper;
 import com.example.BookRental.mapper.AuthorMapper;
 import com.example.BookRental.mapper.BookMapper;
 import com.example.BookRental.mapper.CategoryMapper;
-import com.example.BookRental.model.Author;
-import com.example.BookRental.model.Book;
-import com.example.BookRental.model.Category;
+import com.example.BookRental.model.*;
 import com.example.BookRental.repo.BookRepo;
+import com.example.BookRental.repo.BookTransactionRepo;
 import com.example.BookRental.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
 @RequiredArgsConstructor
 @Service
 public class BookServiceImpl implements BookService {
@@ -32,6 +32,7 @@ public class BookServiceImpl implements BookService {
     private final AuthorMapper authorMapper;
     private final CategoryMapper categoryMapper;
     private final PhotoHelper photoHelper;
+    private final BookTransactionRepo bookTransactionRepo;
 
     @Override
     public ResponseEntity<Object> insertBook(BookDto bookDto) throws IOException {
@@ -120,12 +121,23 @@ public class BookServiceImpl implements BookService {
         }
 
         Book book = optionalBook.get();
+        List<BookTransaction> bookTransactionList = bookTransactionRepo.findByBookId(book.getId());
+        if (bookTransactionList != null) {
+            for (BookTransaction bookTransaction : bookTransactionList) {
+                if (bookTransaction.getRentStatus() == RENT_TYPE.RENT) {
+                    throw new CustomException("Book is rented out and cannot be deleted until all the books are returned");
+                }
+            }
+        }
 
         book.setAuthors(null);
         bookRepo.save(book);
 
-        Integer count = bookMapper.deleteBook(id);
-        if (count == 0) {
+        photoHelper.deleteImage(book.getPhoto());
+
+        try {
+            bookRepo.delete(book);
+        } catch (Exception exception){
             throw new CustomException("Error while deleting Book with ID: " + id);
         }
         return new ResponseEntity<>("Book with ID: " + id + " deleted successfully", HttpStatus.OK);

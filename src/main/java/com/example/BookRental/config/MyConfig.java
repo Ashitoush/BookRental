@@ -1,6 +1,5 @@
 package com.example.BookRental.config;
 
-import com.example.BookRental.exception.CustomAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +20,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity(prePostEnabled = true)
 public class MyConfig{
 
-    private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomUserDetailService customUserDetailService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final BCryptPasswordEncoder passwordEncoder;

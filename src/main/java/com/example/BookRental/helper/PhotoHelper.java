@@ -13,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -21,7 +23,7 @@ import java.util.UUID;
 public class PhotoHelper {
 
     private final BookRepo bookRepo;
-    private ServletContext servletContext;
+//    private ServletContext servletContext;
 
     public String storePhoto(MultipartFile multipartFile) throws IOException {
 
@@ -63,14 +65,23 @@ public class PhotoHelper {
         return imageUrl;
     }
 
-    public String returnFileAsBase64(String filePath) throws IOException {
-        File file = new File(filePath);
+    public void deleteImage(String filePath) {
+        Path path = Paths.get(filePath);
         try {
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            String base64EncodedImage = "data:image/png;base64," + Base64.getEncoder().encodeToString(bytes);
-            return base64EncodedImage;
+            Files.delete(path);
         } catch (IOException ex) {
-            throw new IOException("Cannot encode image into base64");
+            throw new CustomException("Cannot find the image file to delete");
         }
     }
+
+//    public String returnFileAsBase64(String filePath) throws IOException {
+//        File file = new File(filePath);
+//        try {
+//            byte[] bytes = Files.readAllBytes(file.toPath());
+//            String base64EncodedImage = "data:image/png;base64," + Base64.getEncoder().encodeToString(bytes);
+//            return base64EncodedImage;
+//        } catch (IOException ex) {
+//            throw new IOException("Cannot encode image into base64");
+//        }
+//    }
 }

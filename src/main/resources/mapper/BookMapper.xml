@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.BookRental.mapper.BookMapper">
+
+    <resultMap id="BookResult" type="com.example.BookRental.model.Book">
+        <id column="id" property="id"/>
+        <result column="isbn" property="isbn"/>
+        <result column="name" property="name"/>
+        <result column="no_of_pages" property="noOfPages"/>
+        <result column="photo" property="photo"/>
+        <result column="published_date" property="publishedDate"/>
+        <result column="rating" property="rating"/>
+        <result column="stock_count" property="stockCount"/>
+
+<!--        Association Mapping for the category field-->
+        <association property="category" javaType="com.example.BookRental.model.Category">
+            <id column="id" property="id" />
+            <result column="name" property="name" />
+            <result column="description" property="description" />
+        </association>
+
+        <association property="authors" javaType="com.example.BookRental.model.Author">
+            <id column="id" property="id"/>
+            <result column="email" property="email"/>
+            <result column="mobile_number" property="mobileNumber"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+
+<!--    <insert id="insertBook" parameterType="com.example.BookRental.model.Book" keyProperty="id" useGeneratedKeys="true">-->
+<!--        INSERT INTO tbl_book(isbn, name, no_of_pages, photo, published_date, rating, stock_count)-->
+<!--        VALUES(#{isbn}, #{name}, #{noOfPages}, #{photo}, #{publishedDate}, #{rating}, #{stockCount});-->
+
+<!--        <foreach collection="authors" item="author" separator=",">-->
+<!--            INSERT INTO tbl_book_authors (books_id, authors_id)-->
+<!--            VALUES (LAST_INSERT_ID(), #{author.id})-->
+<!--        </foreach>-->
+
+<!--    </insert>-->
+
+    <select id="getAllBook" resultType="com.example.BookRental.model.Book" resultMap="BookResult">
+        SELECT id, isbn, name, no_of_pages, photo, published_date, rating, stock_count FROM tbl_book
+    </select>
+
+<!--    <select id="getBookById" parameterType="long" resultType="com.example.BookRental.model.Book" resultMap="BookResult">-->
+<!--        SELECT id, isbn, name, no_of_pages, photo, published_date, rating, stock_count FROM tbl_book WHERE id = #{id}-->
+<!--    </select>-->
+
+    <update id="updateBook" parameterType="com.example.BookRental.model.Book">
+        UPDATE tbl_book SET(isbn, name, no_of_pages, photo, published_date, rating, stock_count)
+        VALUES(#{isbn}, #{name}, #{noOfPages}, #{photo}, #{publishedDate}, #{rating}, #{stockCount})
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteBook" parameterType="long">
+        DELETE FROM tbl_book WHERE id = #{id}
+    </delete>
+
+</mapper>

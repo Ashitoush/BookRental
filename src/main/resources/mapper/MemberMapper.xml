@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.BookRental.mapper.MemberMapper">
+
+    <resultMap id="MemberResult" type="com.example.BookRental.model.Member">
+        <id column="id" property="id"/>
+        <result column="address" property="address"/>
+        <result column="email" property="email"/>
+        <result column="mobile_no" property="mobileNo"/>
+        <result column="name" property="name"/>
+    </resultMap>
+
+    <insert id="insertMember" parameterType="com.example.BookRental.model.Member" keyProperty="id"
+            useGeneratedKeys="true">
+        INSERT INTO tbl_member(address, email, mobile_no, name)
+        VALUES(#{address}, #{email}, #{mobileNo}, #{name})
+    </insert>
+
+    <select id="getAllMember" resultType="com.example.BookRental.mapper.MemberMapper" resultMap="MemberResult">
+        SELECT id, address, email, mobile_no, name FROM tbl_member
+    </select>
+
+    <select id="getMemberById" parameterType="long" resultType="com.example.BookRental.mapper.MemberMapper"
+            resultMap="MemberResult">
+        SELECT id, address, email, mobile_no, name FROM tbl_member WHERE id = #{id}
+    </select>
+
+    <update id="updateMember" parameterType="com.example.BookRental.model.Member">
+        UPDATE tbl_member SET address = #{address}, email = #{email}, mobile_no = #{mobileNo}, name = #{name} WHERE id =
+        #{id}
+    </update>
+
+    <delete id="deleteMember" parameterType="long">
+        DELETE FROM tbl_member WHERE id = #{id}
+    </delete>
+
+</mapper>

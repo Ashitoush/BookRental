@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.BookRental.mapper.BookTransactionMapper">
+
+    <resultMap id="BookTransactionResult" type="com.example.BookRental.model.BookTransaction">
+        <id column="id" property="id" />
+        <result column="code" property="code" />
+        <result column="from_date" property="fromDate" />
+        <result column="rent_status" property="rentStatus" />
+        <result column="to_date" property="toDate" />
+
+        <association property="book" javaType="com.example.BookRental.model.Book">
+            <id column="id" property="id"/>
+            <result column="isbn" property="isbn"/>
+            <result column="name" property="name"/>
+            <result column="no_of_pages" property="noOfPages"/>
+            <result column="photo" property="photo"/>
+            <result column="published_date" property="publishedDate"/>
+            <result column="rating" property="rating"/>
+            <result column="stock_count" property="stockCount"/>
+        </association>
+
+        <association property="member" javaType="com.example.BookRental.model.Member">
+            <id column="id" property="id" />
+            <result column="address" property="address" />
+            <result column="email" property="email" />
+            <result column="mobile_no" property="mobileNo" />
+            <result column="name" property="name" />
+        </association>
+    </resultMap>
+
+
+    <insert id="insertBookTransaction" parameterType="com.example.BookRental.model.BookTransaction">
+        INSERT INTO tbl_book_transaction
+    </insert>
+
+</mapper>

@@ -133,13 +133,12 @@ public class BookServiceImpl implements BookService {
         book.setAuthors(null);
         bookRepo.save(book);
 
-        photoHelper.deleteImage(book.getPhoto());
-
         try {
             bookRepo.delete(book);
         } catch (Exception exception){
             throw new CustomException("Error while deleting Book with ID: " + id);
         }
+        photoHelper.deleteImage(book.getPhoto());
         return new ResponseEntity<>("Book with ID: " + id + " deleted successfully", HttpStatus.OK);
     }
 }

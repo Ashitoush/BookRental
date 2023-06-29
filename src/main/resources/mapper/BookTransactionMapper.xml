@@ -35,5 +35,4 @@
     <insert id="insertBookTransaction" parameterType="com.example.BookRental.model.BookTransaction">
         INSERT INTO tbl_book_transaction
     </insert>
-
 </mapper>

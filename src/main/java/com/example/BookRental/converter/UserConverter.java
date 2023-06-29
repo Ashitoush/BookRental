@@ -8,6 +8,7 @@ import com.example.BookRental.repo.RoleRepo;
 import lombok.RequiredArgsConstructor;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -17,7 +18,7 @@ import java.util.Optional;
 public class UserConverter {
 
     private final RoleRepo roleRepo;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public User toEntity(UserDto userDto) {
         User user = new User();
@@ -32,8 +33,8 @@ public class UserConverter {
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
         user.setId(user.getId());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-//        user.setPassword(userDto.getPassword());
+//        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setPassword(userDto.getPassword());
         user.setRole(role.get());
 
         return user;

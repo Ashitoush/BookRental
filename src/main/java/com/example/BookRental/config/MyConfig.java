@@ -1,5 +1,8 @@
 package com.example.BookRental.config;
 
+import com.example.BookRental.Constant.AppConstant;
+import com.example.BookRental.exception.JwtAccessDeniedHandler;
+import com.example.BookRental.exception.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,17 +15,23 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
 public class MyConfig{
 
     private final CustomUserDetailService customUserDetailService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAuthorizationFilter jwtAuthorizationFilter;
+    private final PasswordEncoder passwordEncoder;
 
 //    @Bean
 //    public UserDetailsService userDetailsService() {
@@ -32,24 +41,27 @@ public class MyConfig{
 //        return new InMemoryUserDetailsManager(userDetails, userDetails1);
 //    }
 
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable()
+                .cors(cors -> cors.disable())
                 .authorizeHttpRequests()
-                .requestMatchers("/user/**").permitAll()
+                .requestMatchers(AppConstant.PUBLIC_URL).permitAll()
                 .anyRequest()
-                .authenticated().and()
-                .formLogin()
-                .and()
-                .httpBasic()
+                .authenticated()
+//                .and()
+//                .httpBasic()
                 .and()
                 .exceptionHandling()
-                .authenticationEntryPoint(this.customAuthenticationEntryPoint)
+                .accessDeniedHandler(jwtAccessDeniedHandler)
+                .authenticationEntryPoint(this.jwtAuthenticationEntryPoint)
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -57,7 +69,7 @@ public class MyConfig{
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(this.customUserDetailService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder);
+        authenticationProvider.setPasswordEncoder(this.passwordEncoder);
         return authenticationProvider;
     }
 

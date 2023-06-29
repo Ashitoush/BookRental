@@ -4,6 +4,7 @@ import com.example.BookRental.converter.BookTransactionConverter;
 import com.example.BookRental.dto.BookTransactionDto;
 import com.example.BookRental.dto.TransactionDto;
 import com.example.BookRental.exception.CustomException;
+import com.example.BookRental.helper.ExcelHelper;
 import com.example.BookRental.mapper.MemberMapper;
 import com.example.BookRental.model.Book;
 import com.example.BookRental.model.BookTransaction;
@@ -13,12 +14,18 @@ import com.example.BookRental.repo.BookRepo;
 import com.example.BookRental.repo.BookTransactionRepo;
 import com.example.BookRental.service.BookTransactionService;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.formula.ptg.MemErrPtg;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -29,6 +36,7 @@ public class BookTransactionServiceImpl implements BookTransactionService {
     private final BookTransactionConverter bookTransactionConverter;
     private final BookRepo bookRepo;
     private final MemberMapper memberMapper;
+    private final ExcelHelper excelHelper;
 
     @Override
     public ResponseEntity<Object> insertBookTransaction(BookTransactionDto bookTransactionDto) {
@@ -56,7 +64,7 @@ public class BookTransactionServiceImpl implements BookTransactionService {
     public ResponseEntity<Object> getBookTransactionById(Long id) {
         Optional<BookTransaction> bookTransaction = bookTransactionRepo.findById(id);
 
-        if(!bookTransaction.isPresent()) {
+        if (!bookTransaction.isPresent()) {
             throw new CustomException("Book Transaction with ID: " + id + " not found");
         }
         BookTransactionDto bookTransactionDto = bookTransactionConverter.toDto(bookTransaction.get());
@@ -76,7 +84,7 @@ public class BookTransactionServiceImpl implements BookTransactionService {
         }
 
         Member member = memberMapper.getMemberById(bookTransactionDto.getMemberId());
-        if(member == null) {
+        if (member == null) {
             throw new CustomException("Member ID: " + bookTransactionDto.getMemberId() + " not found");
         }
 
@@ -127,7 +135,7 @@ public class BookTransactionServiceImpl implements BookTransactionService {
             throw new CustomException("Error while renting book");
         }
 
-        book.get().setStockCount(stockCount-1);
+        book.get().setStockCount(stockCount - 1);
         bookRepo.save(book.get());
         return new ResponseEntity<>("Book rented successfully", HttpStatus.OK);
 
@@ -136,7 +144,7 @@ public class BookTransactionServiceImpl implements BookTransactionService {
     @Override
     public ResponseEntity<Object> returnBookTransaction(BookTransactionDto bookTransactionDto) {
         Optional<BookTransaction> bookTransaction = bookTransactionRepo.findByCode(bookTransactionDto.getCode());
-        if(!bookTransaction.isPresent()) {
+        if (!bookTransaction.isPresent()) {
             throw new CustomException("Book Transaction not found for the provided code");
         }
 
@@ -150,10 +158,48 @@ public class BookTransactionServiceImpl implements BookTransactionService {
             throw new CustomException("Error while setting book transaction record rent_status to return");
         }
 
-        book.setStockCount(stockCount+1);
+        book.setStockCount(stockCount + 1);
         bookRepo.save(book);
 
         return new ResponseEntity<>("Book returned successfully", HttpStatus.OK);
+    }
+
+    @Override
+    public ByteArrayInputStream generateReport() {
+        List<BookTransaction> bookTransactionList = bookTransactionRepo.findAll();
+        ByteArrayInputStream inputStream = excelHelper.createExcel(bookTransactionList);
+
+        return inputStream;
+    }
+
+    @Override
+    public ResponseEntity<Object> insertFromExcel(MultipartFile file) {
+        List<BookTransaction> bookTransactionList = excelHelper.updateExcel(file);
+
+        for (BookTransaction bookTransaction : bookTransactionList) {
+            BookTransaction bookTransaction1 = bookTransactionRepo.findByCode(bookTransaction.getCode()).get();
+            if (bookTransaction1 != null) {
+                if (bookTransaction1.getRentStatus().toString().equals(RENT_TYPE.RETURN.toString())) {
+                    throw new CustomException("Book Transaction data already exists for transaction code: " + bookTransaction.getCode());
+                } else if (!bookTransaction1.getFromDate().isEqual(bookTransaction.getFromDate())) {
+                    throw new CustomException("The From Date is inconsistent with the existing record");
+                } else if (bookTransaction1.getFromDate().isAfter(bookTransaction.getToDate())) {
+                    throw new CustomException("The To Date cannot be earlier than the From Date");
+                } else {
+                    if (bookTransaction.getRentStatus().equals("RENT")) {
+                        throw new CustomException("Book Already rented for transaction code: " + bookTransaction.getBook());
+                    }
+                    bookTransaction1.setMember(bookTransaction.getMember());
+                    bookTransaction1.setBook(bookTransaction.getBook());
+                    bookTransaction1.setToDate(bookTransaction.getToDate());
+                    bookTransaction1.setRentStatus(bookTransaction.getRentStatus());
+                    bookTransactionRepo.save(bookTransaction1);
+                }
+            } else {
+                bookTransactionRepo.save(bookTransaction);
+            }
+        }
+        return new ResponseEntity<>("All the book transaction from the file: " + file.getOriginalFilename() + " were successfully added", HttpStatus.OK);
     }
 
     @Override

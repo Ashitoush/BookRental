@@ -27,6 +27,11 @@
         SELECT id, address, email, mobile_no, name FROM tbl_member WHERE id = #{id}
     </select>
 
+    <select id="getMemberByName" parameterType="string" resultType="com.example.BookRental.mapper.MemberMapper"
+            resultMap="MemberResult">
+        SELECT id, address, email, mobile_no, name FROM tbl_member WHERE name = #{name}
+    </select>
+
     <update id="updateMember" parameterType="com.example.BookRental.model.Member">
         UPDATE tbl_member SET address = #{address}, email = #{email}, mobile_no = #{mobileNo}, name = #{name} WHERE id =
         #{id}

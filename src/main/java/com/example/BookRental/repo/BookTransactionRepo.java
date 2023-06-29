@@ -1,5 +1,6 @@
 package com.example.BookRental.repo;
 
+import com.example.BookRental.model.Book;
 import com.example.BookRental.model.BookTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,4 +11,5 @@ public interface BookTransactionRepo extends JpaRepository<BookTransaction, Long
     Optional<BookTransaction> findByCode(String code);
     List<BookTransaction> findByBookId(Long id);
     List<BookTransaction> findByMemberId(Long id);
+//    BookTransaction update(BookTransaction bookTransaction);
 }

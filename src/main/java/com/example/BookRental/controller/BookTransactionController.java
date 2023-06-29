@@ -3,17 +3,21 @@ package com.example.BookRental.controller;
 import com.example.BookRental.dto.BookTransactionDto;
 import com.example.BookRental.dto.TransactionDto;
 import com.example.BookRental.exception.CustomException;
-import com.example.BookRental.model.Book;
+import com.example.BookRental.model.BookTransaction;
 import com.example.BookRental.model.RENT_TYPE;
 import com.example.BookRental.service.BookTransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.connector.Response;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -73,6 +77,23 @@ public class BookTransactionController {
         bookTransactionDto.setRentStatus(RENT_TYPE.RETURN);
         bookTransactionDto.setToDate(LocalDate.now());
         return bookTransactionService.returnBookTransaction(bookTransactionDto);
+    }
+    @GetMapping("/generateReport")
+    @PreAuthorize("hasAuthority('LIBRARIAN') or hasAuthority('ADMIN')")
+    public ResponseEntity<Resource> generateReport() {
+        String fileName = "Book Transaction.xlsx";
+        InputStreamResource inputStreamResource = new InputStreamResource(bookTransactionService.generateReport());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=" + fileName)
+                .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+                .body(inputStreamResource);
+    }
+
+    @PostMapping(value = "/insertFromExcel")
+    @PreAuthorize("hasAuthority('LIBRARIAN')")
+    public ResponseEntity<?> insertFromExcel(@RequestParam("file")MultipartFile file) {
+        return bookTransactionService.insertFromExcel(file);
     }
 
     private void checkValidation(BindingResult result) {

@@ -10,6 +10,7 @@ public interface MemberMapper {
     Integer insertMember(Member member);
     List<Member> getAllMember();
     Member getMemberById(Long id);
+    Member getMemberByName(String name);
     Integer updateMember(Member member);
     Integer deleteMember(Long id);
 }

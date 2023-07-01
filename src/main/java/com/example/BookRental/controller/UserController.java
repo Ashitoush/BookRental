@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
 @RestController
@@ -55,7 +56,7 @@ public class UserController {
         checkValidation(result);
         String password = loginDto.getPassword();
         this.authenticate(loginDto.getEmail(), password);
-        UserDetails userDetails = this.customUserDetailService.loadUserByUsername(loginDto.getEmail());
+//        UserDetails userDetails = this.customUserDetailService.loadUserByUsername(loginDto.getEmail());
         UserDto user = userConverter.toDto(this.userRepo.findByEmail(loginDto.getEmail()).get());
         String token = jwtHelper.generateToken(new CustomUserDetail(user, roleRepo));
         String bearerToken = "Bearer " + token;
@@ -72,7 +73,7 @@ public class UserController {
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
-    @PostMapping("resetPasswordRequest")
+    @PostMapping("/resetPasswordRequest")
     public ResponseEntity<?> resetPasswordEmailSend(@Valid @RequestBody PasswordResetTokenDto passwordResetTokenDto, BindingResult result) {
         checkValidation(result);
         PasswordResetToken passwordResetToken = this.passwordResetTokenService.generatePasswordResetToken(passwordResetTokenDto);
@@ -80,7 +81,7 @@ public class UserController {
         return new ResponseEntity<>("Reset Token Sent Successfully", HttpStatus.OK);
     }
     private void sendEmail(PasswordResetToken passwordResetToken, String email){
-        String message = emailService.sendEmail(passwordResetToken, email);
+        CompletableFuture<String> message = emailService.sendEmail(passwordResetToken, email);
     }
 
     private void authenticate(String userName, String password) {

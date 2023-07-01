@@ -44,7 +44,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             final UserDetails userDetails = this.customUserDetailService.loadUserByUsername(userName);
-            if (userDetails !=null && this.jwtHelper.validateToken(jwtToken, userDetails.getUsername())) {
+            if (userDetails != null && this.jwtHelper.validateToken(jwtToken, userDetails.getUsername())) {
 
                 List<GrantedAuthority> authorities = this.jwtHelper.getAuthoritiesClaimFromToken(jwtToken);
 

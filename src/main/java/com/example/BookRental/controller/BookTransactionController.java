@@ -79,7 +79,7 @@ public class BookTransactionController {
         return bookTransactionService.returnBookTransaction(bookTransactionDto);
     }
     @GetMapping("/generateReport")
-    @PreAuthorize("hasAuthority('LIBRARIAN') or hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('LIBRARIAN') or hasAuthority('ADMIN')")
     public ResponseEntity<Resource> generateReport() {
         String fileName = "Book Transaction.xlsx";
         InputStreamResource inputStreamResource = new InputStreamResource(bookTransactionService.generateReport());

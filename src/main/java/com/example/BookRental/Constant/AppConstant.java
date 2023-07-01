@@ -6,6 +6,7 @@ public class AppConstant {
             "/user/create",
             "/bookTransaction/generateReport",
             "/user/resetPasswordRequest",
-            "/user/resetPassword/**"
+            "/user/resetPassword/**",
+            "/bookTransaction/generateReport"
     };
 }

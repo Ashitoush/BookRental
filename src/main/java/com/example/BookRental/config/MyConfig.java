@@ -14,7 +14,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -27,20 +26,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class MyConfig{
 
     private final CustomUserDetailService customUserDetailService;
-    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
     private final PasswordEncoder passwordEncoder;
-
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        UserDetails userDetails = User.builder().username("admin@gmail.com").password(passwordEncoder().encode("admin123")).authorities("ADMIN").roles("ADMIN").build();
-//        UserDetails userDetails1 = User.builder().username("librarian@gmail.com").password(passwordEncoder().encode("librarian123")).authorities("LIBRARIAN").roles("LIBRARIAN").build();
-//
-//        return new InMemoryUserDetailsManager(userDetails, userDetails1);
-//    }
-
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -50,8 +39,6 @@ public class MyConfig{
                 .requestMatchers(AppConstant.PUBLIC_URL).permitAll()
                 .anyRequest()
                 .authenticated()
-//                .and()
-//                .httpBasic()
                 .and()
                 .exceptionHandling()
                 .accessDeniedHandler(jwtAccessDeniedHandler)

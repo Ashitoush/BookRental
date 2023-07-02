@@ -1,5 +1,6 @@
 package com.example.BookRental.service.ServiceImpl;
 
+import com.example.BookRental.config.CustomMessageSource;
 import com.example.BookRental.converter.MemberConverter;
 import com.example.BookRental.dto.MemberDto;
 import com.example.BookRental.exception.CustomException;
@@ -23,6 +24,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberConverter memberConverter;
     private final MemberMapper memberMapper;
     private final BookTransactionRepo bookTransactionRepo;
+    private final CustomMessageSource messageSource;
 
     @Override
     public ResponseEntity<Object> insertMember(MemberDto memberDto) {
@@ -31,10 +33,10 @@ public class MemberServiceImpl implements MemberService {
         Integer count = memberMapper.insertMember(member);
 
         if (count == 0) {
-            throw new CustomException("Error while inserting member");
+            throw new CustomException(messageSource.get("member.insert.error"));
         }
 
-        return new ResponseEntity<>("Member Inserted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("member.insert.success"), HttpStatus.OK);
     }
 
     @Override
@@ -42,7 +44,7 @@ public class MemberServiceImpl implements MemberService {
         List<Member> memberList = memberMapper.getAllMember();
 
         if (memberList.isEmpty()) {
-            throw new CustomException("Error while fetching Member Details");
+            throw new CustomException(messageSource.get("member.read.error"));
         }
         List<MemberDto> memberDtoList = memberConverter.toDto(memberList);
 
@@ -53,7 +55,7 @@ public class MemberServiceImpl implements MemberService {
     public ResponseEntity<Object> getMemberById(Long id) {
         Member member = memberMapper.getMemberById(id);
         if (member == null) {
-            throw new CustomException("Member with ID: " + id + " not found");
+            throw new CustomException(messageSource.get("member.not.found"));
         }
 
         MemberDto memberDto = memberConverter.toDto(member);
@@ -64,7 +66,7 @@ public class MemberServiceImpl implements MemberService {
     public ResponseEntity<Object> updateMember(MemberDto memberDto) {
         Member member = memberMapper.getMemberById(memberDto.getId());
         if (member == null) {
-            throw new CustomException("Member with ID: " + memberDto.getId() + " not found");
+            throw new CustomException(messageSource.get("member.not.found"));
         } else {
             member.setName(memberDto.getName());
             member.setAddress(memberDto.getAddress());
@@ -74,24 +76,24 @@ public class MemberServiceImpl implements MemberService {
 
         Integer count = memberMapper.updateMember(member);
         if(count == 0) {
-            throw new CustomException("Error while updating Member Details");
+            throw new CustomException(messageSource.get("member.update.error"));
         }
 
-        return new ResponseEntity<>("Member updated Successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("member.update.success"), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Object> deleteMember(Long id) {
         Member member = memberMapper.getMemberById(id);
         if(member == null) {
-            throw new CustomException("Member with ID: " + id + " not found");
+            throw new CustomException(messageSource.get("member.not.found"));
         }
 
         List<BookTransaction> bookTransactionList = bookTransactionRepo.findByMemberId(member.getId());
 
         for (BookTransaction bookTransaction : bookTransactionList) {
             if (bookTransaction.getRentStatus() == RENT_TYPE.RENT) {
-                throw new CustomException("Member cannot be deleted until all the books are returned");
+                throw new CustomException(messageSource.get("member.delete.returnAll.error"));
             }
         }
 
@@ -100,9 +102,9 @@ public class MemberServiceImpl implements MemberService {
         Integer count = memberMapper.deleteMember(id);
 
         if(count == 0) {
-            throw new CustomException("Error while deleting Member with ID: " + id);
+            throw new CustomException(messageSource.get("member.delete.error"));
         }
 
-        return new ResponseEntity<>("Member with ID: " + id + " Deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("member.delete.success"), HttpStatus.OK);
     }
 }

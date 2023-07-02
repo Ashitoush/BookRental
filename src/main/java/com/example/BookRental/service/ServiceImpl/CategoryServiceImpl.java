@@ -1,5 +1,6 @@
 package com.example.BookRental.service.ServiceImpl;
 
+import com.example.BookRental.config.CustomMessageSource;
 import com.example.BookRental.converter.CategoryConverter;
 import com.example.BookRental.dto.CategoryDto;
 import com.example.BookRental.exception.CustomException;
@@ -22,22 +23,23 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryConverter categoryConverter;
     private final CategoryMapper categoryMapper;
     private final BookRepo bookRepo;
+    private final CustomMessageSource messageSource;
 
     @Override
     public ResponseEntity<Object> insertCategory(CategoryDto categoryDto) {
         Category category = categoryConverter.toEntity(categoryDto);
 
         if(category == null) {
-            throw new CustomException("Error while converting categoryDto into category");
+            throw new CustomException(messageSource.get("category.from.dto.error"));
         }
 
         Integer count = categoryMapper.insertCategory(category);
 
         if(count == 0) {
-            throw new CustomException("Error while inserting category");
+            throw new CustomException(messageSource.get("category.insert.error"));
         }
 
-        return new ResponseEntity<>("Category inserted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("category.insert.success"), HttpStatus.OK);
     }
 
     @Override
@@ -45,7 +47,7 @@ public class CategoryServiceImpl implements CategoryService {
         List<Category> categoryList = categoryMapper.getAllCategory();
 
         if(categoryList.isEmpty()) {
-            throw new CustomException("Error while fetching Category");
+            throw new CustomException(messageSource.get("category.read.error"));
         }
 
         List<CategoryDto> categoryDto = categoryConverter.toDto(categoryList);
@@ -58,7 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryMapper.getCategoryById(id);
 
         if(category == null) {
-            throw new CustomException("Category with ID: " + id + " not found");
+            throw new CustomException(messageSource.get("category.not.found"));
         }
 
         CategoryDto categoryDto = categoryConverter.toDto(category);
@@ -71,7 +73,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryMapper.getCategoryById(categoryDto.getId());
 
         if (category == null) {
-            throw new CustomException("Category with ID: " + categoryDto.getId() + " not found");
+            throw new CustomException(messageSource.get("category.not.found"));
         }
 
         category = categoryConverter.toEntity(categoryDto);
@@ -79,10 +81,10 @@ public class CategoryServiceImpl implements CategoryService {
         Integer count = categoryMapper.updateCategory(category);
 
         if (count == 0) {
-            throw new CustomException("Error while updating category with ID: " + category.getId());
+            throw new CustomException(messageSource.get("category.update.error"));
         }
 
-        return new ResponseEntity<>("Category with ID: " + category.getId() + " updated successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("category.update.success"), HttpStatus.OK);
     }
 
     @Override
@@ -90,7 +92,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryMapper.getCategoryById(id);
 
         if (category == null) {
-            throw new CustomException("Category with ID: " + id + " not found");
+            throw new CustomException(messageSource.get("category.not.found"));
         }
 
         List<Book> bookList = bookRepo.findByCategoryId(id);
@@ -100,6 +102,6 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         categoryMapper.deleteCategory(id);
-        return new ResponseEntity<>("Category with ID: " + id + " deleted Successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("category.delete.success"), HttpStatus.OK);
     }
 }

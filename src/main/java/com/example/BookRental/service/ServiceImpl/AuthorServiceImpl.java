@@ -1,5 +1,6 @@
 package com.example.BookRental.service.ServiceImpl;
 
+import com.example.BookRental.config.CustomMessageSource;
 import com.example.BookRental.converter.AuthorConverter;
 import com.example.BookRental.dto.AuthorDto;
 import com.example.BookRental.exception.CustomException;
@@ -24,6 +25,7 @@ public class AuthorServiceImpl implements AuthorService {
     private final AuthorMapper authorMapper;
     private final BookMapper bookMapper;
     private final AuthorConverter authorConverter;
+    private final CustomMessageSource messageSource;
 
     @Override
     public ResponseEntity<Object> insertAuthor(AuthorDto authorDto) {
@@ -43,9 +45,9 @@ public class AuthorServiceImpl implements AuthorService {
         Integer result = authorMapper.insertAuthor(author);
 
         if (result > 0) {
-            return new ResponseEntity<>("Author Inserted Successfully", HttpStatus.OK);
+            return new ResponseEntity<>(messageSource.get("author.inserted.success"), HttpStatus.OK);
         } else {
-            throw new CustomException("Author Cannot Be Inserted !!!");
+            throw new CustomException(messageSource.get("author.not.inserted"));
         }
     }
 
@@ -55,7 +57,7 @@ public class AuthorServiceImpl implements AuthorService {
         List<AuthorDto> authorDtoList = authorConverter.toDto(authors);
 
         if (authors.isEmpty()) {
-            throw new ResourceNotFoundException("Error while retrieving Authors");
+            throw new ResourceNotFoundException(messageSource.get("author.retrieve.error"));
         }
         return new ResponseEntity<>(authorDtoList, HttpStatus.OK);
     }
@@ -65,7 +67,7 @@ public class AuthorServiceImpl implements AuthorService {
         Author author = authorMapper.getAuthorById(id);
 
         if (author == null) {
-            throw new ResourceNotFoundException("Author with ID: " + id + " not found");
+            throw new ResourceNotFoundException(messageSource.get("author.not.found"));
         }
 
         AuthorDto authorDto = authorConverter.toDto(author);
@@ -89,9 +91,9 @@ public class AuthorServiceImpl implements AuthorService {
         Integer count = authorMapper.updateAuthor(author);
 
         if (count == 0) {
-            throw new CustomException("Cannot update author");
+            throw new CustomException(messageSource.get("author.cannot.update"));
         }
-        return new ResponseEntity<>("Author Updated successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("author.update.success"), HttpStatus.OK);
     }
 
     @Override
@@ -99,7 +101,7 @@ public class AuthorServiceImpl implements AuthorService {
         Author author = authorMapper.getAuthorById(id);
 
         if (author == null) {
-            throw new CustomException("Author With ID: " + id + " not found");
+            throw new CustomException(messageSource.get("author.not.found"));
         }
 
         author.setBooks(null);
@@ -107,10 +109,10 @@ public class AuthorServiceImpl implements AuthorService {
         Integer count = authorMapper.deleteAuthor(id);
 
         if (count == 0) {
-            throw new CustomException("Error while deleting Author with ID: " + id);
+            throw new CustomException(messageSource.get("author.delete.error"));
         }
 
-        return new ResponseEntity<>("Author with ID: " + id + " deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("author.delete.success"), HttpStatus.OK);
     }
 
 

@@ -10,6 +10,7 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 @Component
 public class JwtAuthenticationEntryPoint extends Http403ForbiddenEntryPoint {
@@ -17,6 +18,7 @@ public class JwtAuthenticationEntryPoint extends Http403ForbiddenEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException arg2) throws IOException {
         response.setStatus(HttpStatus.FORBIDDEN.value());
+
         RequestDispatcher rd = request.getRequestDispatcher("/error");
         try {
             rd.forward(request, response);

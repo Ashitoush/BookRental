@@ -5,6 +5,7 @@ import com.example.BookRental.dto.TransactionDto;
 import com.example.BookRental.helper.CheckValidation;
 import com.example.BookRental.model.RENT_TYPE;
 import com.example.BookRental.service.BookTransactionService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
@@ -48,7 +49,7 @@ public class BookTransactionController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateBookTransaction(@PathVariable("id") Long id, @Valid @RequestBody TransactionDto bookTransactionDto, BindingResult result) {
+    public ResponseEntity<?> updateBookTransaction(HttpServletRequest request, @PathVariable("id") Long id, @Valid @RequestBody TransactionDto bookTransactionDto, BindingResult result) {
         validation.checkValidation(result);
         bookTransactionDto.setId(id);
         return bookTransactionService.updateBookTransaction(bookTransactionDto);

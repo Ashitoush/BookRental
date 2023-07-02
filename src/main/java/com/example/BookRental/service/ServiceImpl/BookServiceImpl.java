@@ -1,5 +1,6 @@
 package com.example.BookRental.service.ServiceImpl;
 
+import com.example.BookRental.config.CustomMessageSource;
 import com.example.BookRental.converter.BookConverter;
 import com.example.BookRental.dto.BookDto;
 import com.example.BookRental.exception.CustomException;
@@ -33,6 +34,7 @@ public class BookServiceImpl implements BookService {
     private final CategoryMapper categoryMapper;
     private final PhotoHelper photoHelper;
     private final BookTransactionRepo bookTransactionRepo;
+    private final CustomMessageSource messageSource;
 
     @Override
     public ResponseEntity<Object> insertBook(BookDto bookDto) throws IOException {
@@ -46,10 +48,10 @@ public class BookServiceImpl implements BookService {
         Book book1 = bookRepo.save(book);
 
         if (book1 == null) {
-            throw new CustomException("Error while inserting book");
+            throw new CustomException(messageSource.get("book.insert.error"));
         }
 
-        return new ResponseEntity<>("Book Inserted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("book.insert.success"), HttpStatus.OK);
     }
 
     @Override
@@ -65,7 +67,7 @@ public class BookServiceImpl implements BookService {
         Optional<Book> book = bookRepo.findById(id);
 
         if (!book.isPresent()) {
-            throw new CustomException("Book with ID: " + id + " not found");
+            throw new CustomException(messageSource.get("book.not.found"));
         }
 
         BookDto bookDto = bookConverter.toDto(book.get());
@@ -78,17 +80,17 @@ public class BookServiceImpl implements BookService {
         Optional<Book> optionalBook = bookRepo.findById(bookDto.getId());
 
         if(!optionalBook.isPresent()) {
-            throw new CustomException("Book with ID: " + bookDto.getId() + " not found");
+            throw new CustomException(messageSource.get("book.not.found"));
         }
 
         List<Author> authorList = bookDto.getAuthorsId().stream().map(author -> authorMapper.getAuthorById(author)).collect(Collectors.toList());
         if(authorList.isEmpty() || authorList.contains(null)) {
-            throw new CustomException("Author Id is wrong");
+            throw new CustomException(messageSource.get("author.not.found"));
         }
 
         Category category = categoryMapper.getCategoryById(bookDto.getCategoryId());
         if(category == null) {
-            throw new CustomException("Category with Id: " + bookDto.getCategoryId() + " not found");
+            throw new CustomException(messageSource.get("category.not.found"));
         }
 
         Book book = optionalBook.get();
@@ -108,16 +110,16 @@ public class BookServiceImpl implements BookService {
         book = bookRepo.save(book);
 
         if (book == null) {
-            throw new CustomException("Error while updating book");
+            throw new CustomException(messageSource.get("book.update.error"));
         }
-        return new ResponseEntity<>("Book with ID: " + book.getId() + " Updated successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("book.update.success"), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Object> deleteBook(Long id) {
         Optional<Book> optionalBook = bookRepo.findById(id);
         if(!optionalBook.isPresent()) {
-            throw new CustomException("Book with ID: " + id + " not found");
+            throw new CustomException(messageSource.get("book.not.found"));
         }
 
         Book book = optionalBook.get();
@@ -125,7 +127,7 @@ public class BookServiceImpl implements BookService {
         if (bookTransactionList != null) {
             for (BookTransaction bookTransaction : bookTransactionList) {
                 if (bookTransaction.getRentStatus() == RENT_TYPE.RENT) {
-                    throw new CustomException("Book is rented out and cannot be deleted until all the books are returned");
+                    throw new CustomException(messageSource.get("book.rented.cannot.delete"));
                 }
             }
         }
@@ -136,9 +138,9 @@ public class BookServiceImpl implements BookService {
         try {
             bookRepo.delete(book);
         } catch (Exception exception){
-            throw new CustomException("Error while deleting Book with ID: " + id);
+            throw new CustomException(messageSource.get("book.delete.error"));
         }
         photoHelper.deleteImage(book.getPhoto());
-        return new ResponseEntity<>("Book with ID: " + id + " deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("book.delete.success"), HttpStatus.OK);
     }
 }

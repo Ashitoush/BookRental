@@ -1,5 +1,6 @@
 package com.example.BookRental.controller;
 
+import com.example.BookRental.config.CustomMessageSource;
 import com.example.BookRental.config.CustomUserDetail;
 import com.example.BookRental.config.CustomUserDetailService;
 import com.example.BookRental.converter.UserConverter;
@@ -15,6 +16,7 @@ import com.example.BookRental.service.PasswordResetTokenService;
 import com.example.BookRental.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.connector.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,6 +43,7 @@ public class UserController {
     private final EmailService emailService;
     private final PasswordResetTokenService passwordResetTokenService;
     private final CheckValidation validation;
+    private final CustomMessageSource messageSource;
 
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@Valid @RequestBody UserDto userDto, BindingResult result) {
@@ -64,7 +67,7 @@ public class UserController {
     public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetDto passwordResetDto, @RequestParam("token") String token, BindingResult result) {
         validation.checkValidation(result);
         if (!passwordResetDto.getPassword().equals(passwordResetDto.getConfirmPassword())) {
-            throw new CustomException("Password and Confirm Password does not match");
+            throw new CustomException(messageSource.get("password.confirm.dont.match"));
         }
         String message = this.passwordResetTokenService.resetPassword(passwordResetDto, token);
         return new ResponseEntity<>(message, HttpStatus.OK);
@@ -75,8 +78,14 @@ public class UserController {
         validation.checkValidation(result);
         PasswordResetToken passwordResetToken = this.passwordResetTokenService.generatePasswordResetToken(passwordResetTokenDto);
         sendEmail(passwordResetToken, passwordResetTokenDto.getEmail());
-        return new ResponseEntity<>("Reset Token Sent Successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("reset.token.success"), HttpStatus.OK);
     }
+
+    @GetMapping("/hello")
+    public ResponseEntity<?> hello() {
+        return new ResponseEntity<>(messageSource.get("book.rental"), HttpStatus.OK);
+    }
+
     private void sendEmail(PasswordResetToken passwordResetToken, String email){
         CompletableFuture<String> message = emailService.sendEmail(passwordResetToken, email);
     }

@@ -1,5 +1,6 @@
 package com.example.BookRental.service.ServiceImpl;
 
+import com.example.BookRental.config.CustomMessageSource;
 import com.example.BookRental.dto.PasswordResetDto;
 import com.example.BookRental.dto.PasswordResetTokenDto;
 import com.example.BookRental.exception.CustomException;
@@ -23,12 +24,13 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
     private final UserRepo userRepo;
     private final PasswordResetTokenRepo passwordResetTokenRepo;
     private final PasswordEncoder passwordEncoder;
+    private final CustomMessageSource messageSource;
 
     @Override
     public PasswordResetToken generatePasswordResetToken(PasswordResetTokenDto passwordResetTokenDto) {
         Optional<User> user = this.userRepo.findByEmail(passwordResetTokenDto.getEmail());
         if (!user.isPresent()) {
-            throw new CustomException("No User found for email: " + passwordResetTokenDto.getEmail());
+            throw new CustomException(messageSource.get("user.not.found.email"));
         }
 
 
@@ -53,17 +55,17 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
     public String resetPassword(PasswordResetDto passwordResetDto, String token) {
         Optional<PasswordResetToken> passwordResetToken = this.passwordResetTokenRepo.findByToken(token);
         if (!passwordResetToken.isPresent()) {
-            throw new CustomException("Invalid Password Reset Token");
+            throw new CustomException(messageSource.get("password.invalid.token"));
         } else {
             if (passwordResetToken.get().getExpirationDate().isBefore(LocalDateTime.now())) {
-                throw new CustomException("Password Reset Token Expired, Create a New Password Reset Token");
+                throw new CustomException(messageSource.get("password.token.expired"));
             }
         }
 
         User user = passwordResetToken.get().getUser();
         Optional<User> user1 = this.userRepo.findById(user.getId());
         if (!user1.isPresent()) {
-            throw new CustomException("User Does not exists for the given token");
+            throw new CustomException(messageSource.get("user.not.exists.token"));
         }
 
         user = user1.get();
@@ -73,6 +75,6 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
         passwordResetToken.get().setUser(null);
         passwordResetTokenRepo.delete(passwordResetToken.get());
 
-        return "Password reset Successful";
+        return messageSource.get("password.reset.success");
     }
 }

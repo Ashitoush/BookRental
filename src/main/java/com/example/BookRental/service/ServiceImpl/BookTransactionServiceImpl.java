@@ -1,5 +1,6 @@
 package com.example.BookRental.service.ServiceImpl;
 
+import com.example.BookRental.config.CustomMessageSource;
 import com.example.BookRental.converter.BookTransactionConverter;
 import com.example.BookRental.dto.BookTransactionDto;
 import com.example.BookRental.dto.TransactionDto;
@@ -37,6 +38,7 @@ public class BookTransactionServiceImpl implements BookTransactionService {
     private final BookRepo bookRepo;
     private final MemberMapper memberMapper;
     private final ExcelHelper excelHelper;
+    private final CustomMessageSource messageSource;
 
     @Override
     public ResponseEntity<Object> insertBookTransaction(BookTransactionDto bookTransactionDto) {
@@ -45,10 +47,10 @@ public class BookTransactionServiceImpl implements BookTransactionService {
         bookTransaction = bookTransactionRepo.save(bookTransaction);
 
         if (bookTransaction == null) {
-            throw new CustomException("Error while creating book transaction");
+            throw new CustomException(messageSource.get("bookTransaction.create.error"));
         }
 
-        return new ResponseEntity<>("Book Transaction created successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("bookTransaction.create.success"), HttpStatus.OK);
     }
 
     @Override
@@ -65,7 +67,7 @@ public class BookTransactionServiceImpl implements BookTransactionService {
         Optional<BookTransaction> bookTransaction = bookTransactionRepo.findById(id);
 
         if (!bookTransaction.isPresent()) {
-            throw new CustomException("Book Transaction with ID: " + id + " not found");
+            throw new CustomException(messageSource.get("bookTransaction.not.found"));
         }
         BookTransactionDto bookTransactionDto = bookTransactionConverter.toDto(bookTransaction.get());
         return new ResponseEntity<>(bookTransactionDto, HttpStatus.OK);
@@ -75,24 +77,25 @@ public class BookTransactionServiceImpl implements BookTransactionService {
     public ResponseEntity<Object> updateBookTransaction(TransactionDto bookTransactionDto) {
         Optional<BookTransaction> bookTransaction = bookTransactionRepo.findById(bookTransactionDto.getId());
         if (!bookTransaction.isPresent()) {
-            throw new CustomException("Book Transaction with ID: " + bookTransactionDto.getId() + " not found");
+            throw new CustomException(messageSource.get("bookTransaction.not.found"));
         }
 
         Optional<Book> book = bookRepo.findById(bookTransactionDto.getBookId());
         if (!book.isPresent()) {
-            throw new CustomException("Book ID: " + bookTransactionDto.getBookId() + " not found");
+            throw new CustomException(messageSource.get("book.not.found"));
         }
 
         Member member = memberMapper.getMemberById(bookTransactionDto.getMemberId());
         if (member == null) {
-            throw new CustomException("Member ID: " + bookTransactionDto.getMemberId() + " not found");
+            throw new CustomException(messageSource.get("member.not.found"));
         }
 
         LocalDate localDate = bookTransaction.get().getFromDate().plusDays(bookTransactionDto.getDays());
         if (bookTransaction.get().getToDate().isBefore(localDate)) {
             bookTransaction.get().setToDate(localDate);
         } else {
-            throw new CustomException("The specified day for the rent duration is lower than the day provided earlier");
+            String message = messageSource.get("bookTransaction.rentDay.lower");
+            throw new CustomException(messageSource.get("bookTransaction.rentDay.lower"));
         }
 
 //        bookTransaction.get().setId(bookTransactionDto.getId());
@@ -105,7 +108,7 @@ public class BookTransactionServiceImpl implements BookTransactionService {
 
         bookTransactionRepo.save(bookTransaction.get());
 
-        return new ResponseEntity<>("Book Transaction with ID: " + bookTransaction.get().getId() + " updated successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("bookTransaction.update.success"), HttpStatus.OK);
     }
 
     @Override
@@ -113,18 +116,18 @@ public class BookTransactionServiceImpl implements BookTransactionService {
 
         Optional<Book> book = bookRepo.findById(bookTransactionDto.getBookId());
         if (!book.isPresent()) {
-            throw new CustomException("Book with ID: " + bookTransactionDto.getBookId() + " not found");
+            throw new CustomException(messageSource.get("book.not.found"));
         }
 
         Member member = memberMapper.getMemberById(bookTransactionDto.getMemberId());
         if (member == null) {
-            throw new CustomException("Member with ID: " + bookTransactionDto.getMemberId() + " not found");
+            throw new CustomException(messageSource.get("member.not.found"));
         }
 
         Integer stockCount = book.get().getStockCount();
 
         if (stockCount == 0) {
-            throw new CustomException("There is no stock for Book: " + book.get().getName());
+            throw new CustomException(messageSource.get("book.stock.zero"));
         }
 
         LocalDate localDate = bookTransactionDto.getFromDate().plusDays(bookTransactionDto.getDays());
@@ -132,12 +135,12 @@ public class BookTransactionServiceImpl implements BookTransactionService {
         BookTransaction bookTransaction = bookTransactionConverter.toEntity(bookTransactionDto);
 
         if (bookTransactionRepo.save(bookTransaction) == null) {
-            throw new CustomException("Error while renting book");
+            throw new CustomException(messageSource.get("bookTransaction.rent.error"));
         }
 
         book.get().setStockCount(stockCount - 1);
         bookRepo.save(book.get());
-        return new ResponseEntity<>("Book rented successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("bookTransaction.rent.success"), HttpStatus.OK);
 
     }
 
@@ -145,7 +148,7 @@ public class BookTransactionServiceImpl implements BookTransactionService {
     public ResponseEntity<Object> returnBookTransaction(BookTransactionDto bookTransactionDto) {
         Optional<BookTransaction> bookTransaction = bookTransactionRepo.findByCode(bookTransactionDto.getCode());
         if (!bookTransaction.isPresent()) {
-            throw new CustomException("Book Transaction not found for the provided code");
+            throw new CustomException(messageSource.get("bookTransaction.not.found.code"));
         }
 
         Book book = bookRepo.findById(bookTransaction.get().getBook().getId()).get();
@@ -155,13 +158,13 @@ public class BookTransactionServiceImpl implements BookTransactionService {
         bookTransaction.get().setRentStatus(bookTransactionDto.getRentStatus());
 
         if (bookTransactionRepo.save(bookTransaction.get()) == null) {
-            throw new CustomException("Error while setting book transaction record rent_status to return");
+            throw new CustomException(messageSource.get("bookTransaction.status.return.error"));
         }
 
         book.setStockCount(stockCount + 1);
         bookRepo.save(book);
 
-        return new ResponseEntity<>("Book returned successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("bookTransaction.return.success"), HttpStatus.OK);
     }
 
     @Override
@@ -180,14 +183,14 @@ public class BookTransactionServiceImpl implements BookTransactionService {
             BookTransaction bookTransaction1 = bookTransactionRepo.findByCode(bookTransaction.getCode()).get();
             if (bookTransaction1 != null) {
                 if (bookTransaction1.getRentStatus().toString().equals(RENT_TYPE.RETURN.toString())) {
-                    throw new CustomException("Book Transaction data already exists for transaction code: " + bookTransaction.getCode());
+                    throw new CustomException(messageSource.get("bookTransaction.exists.code"));
                 } else if (!bookTransaction1.getFromDate().isEqual(bookTransaction.getFromDate())) {
-                    throw new CustomException("The From Date is inconsistent with the existing record");
+                    throw new CustomException(messageSource.get("bookTransaction.from.date.inconsistent"));
                 } else if (bookTransaction1.getFromDate().isAfter(bookTransaction.getToDate())) {
-                    throw new CustomException("The To Date cannot be earlier than the From Date");
+                    throw new CustomException(messageSource.get("bookTransaction.to.date.inconsistent"));
                 } else {
                     if (bookTransaction.getRentStatus().equals("RENT")) {
-                        throw new CustomException("Book Already rented for transaction code: " + bookTransaction.getBook());
+                        throw new CustomException(messageSource.get("bookTransaction.already.rented"));
                     }
                     bookTransaction1.setMember(bookTransaction.getMember());
                     bookTransaction1.setBook(bookTransaction.getBook());
@@ -199,18 +202,18 @@ public class BookTransactionServiceImpl implements BookTransactionService {
                 bookTransactionRepo.save(bookTransaction);
             }
         }
-        return new ResponseEntity<>("All the book transaction from the file: " + file.getOriginalFilename() + " were successfully added", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("bookTransaction.excel.upload.success"), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Object> deleteBookTransaction(Long id) {
         Optional<BookTransaction> bookTransaction = bookTransactionRepo.findById(id);
         if (!bookTransaction.isPresent()) {
-            throw new CustomException("Book Transaction with ID: " + id + " not found");
+            throw new CustomException(messageSource.get("bookTransaction.not.found"));
         }
 
         if (bookTransaction.get().getRentStatus() == RENT_TYPE.RENT) {
-            throw new CustomException("Book Transaction cannot be deleted until the book is returned");
+            throw new CustomException(messageSource.get("bookTransaction.delete.rent.error"));
         }
 
         bookTransaction.get().setBook(null);
@@ -218,6 +221,6 @@ public class BookTransactionServiceImpl implements BookTransactionService {
         bookTransactionRepo.save(bookTransaction.get());
 
         bookTransactionRepo.delete(bookTransaction.get());
-        return new ResponseEntity<>("Book Transaction with ID: " + id + " deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(messageSource.get("bookTransaction.delete.success"), HttpStatus.OK);
     }
 }

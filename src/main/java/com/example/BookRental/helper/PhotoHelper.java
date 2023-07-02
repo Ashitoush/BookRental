@@ -1,5 +1,6 @@
 package com.example.BookRental.helper;
 
+import com.example.BookRental.config.CustomMessageSource;
 import com.example.BookRental.exception.CustomException;
 import com.example.BookRental.mapper.BookMapper;
 import com.example.BookRental.model.Book;
@@ -23,7 +24,7 @@ import java.util.UUID;
 public class PhotoHelper {
 
     private final BookRepo bookRepo;
-//    private ServletContext servletContext;
+    private final CustomMessageSource messageSource;
 
     public String storePhoto(MultipartFile multipartFile) throws IOException {
 
@@ -48,7 +49,7 @@ public class PhotoHelper {
 
             return filePath;
         } else {
-            throw new CustomException("Photo is not of valid format");
+            throw new CustomException(messageSource.get("photo.format.not.valid"));
         }
     }
 
@@ -70,7 +71,7 @@ public class PhotoHelper {
         try {
             Files.delete(path);
         } catch (IOException ex) {
-            throw new CustomException("Cannot find the image file to delete");
+            throw new CustomException(messageSource.get("photo.not.found.delete"));
         }
     }
 

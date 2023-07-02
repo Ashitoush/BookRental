@@ -1,5 +1,6 @@
 package com.example.BookRental.converter;
 
+import com.example.BookRental.config.CustomMessageSource;
 import com.example.BookRental.dto.BookTransactionDto;
 import com.example.BookRental.exception.CustomException;
 import com.example.BookRental.mapper.MemberMapper;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -20,18 +22,21 @@ public class BookTransactionConverter {
 
     private final BookRepo bookRepo;
     private final MemberMapper memberMapper;
+    private final CustomMessageSource messageSource;
 
     public BookTransaction toEntity(BookTransactionDto bookTransactionDto) {
         BookTransaction bookTransaction = new BookTransaction();
 
         Optional<Book> book = bookRepo.findById(bookTransactionDto.getBookId());
         if (!book.isPresent()) {
-            throw new CustomException("Book ID: " + bookTransactionDto.getBookId() + " not found");
+//            throw new CustomException("Book ID: " + bookTransactionDto.getBookId() + " not found");
+            throw new CustomException(messageSource.get("book.not.found"));
         }
 
         Member member = memberMapper.getMemberById(bookTransactionDto.getMemberId());
         if(member == null) {
-            throw new CustomException("Member ID: " + bookTransactionDto.getMemberId() + " not found");
+//            throw new CustomException("Member ID: " + bookTransactionDto.getMemberId() + " not found");
+            throw new CustomException(messageSource.get("member.not.found"));
         }
 
         bookTransaction.setId(bookTransactionDto.getId());

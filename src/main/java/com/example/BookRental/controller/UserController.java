@@ -5,6 +5,7 @@ import com.example.BookRental.config.CustomUserDetailService;
 import com.example.BookRental.converter.UserConverter;
 import com.example.BookRental.dto.*;
 import com.example.BookRental.exception.CustomException;
+import com.example.BookRental.helper.CheckValidation;
 import com.example.BookRental.helper.JwtHelper;
 import com.example.BookRental.model.PasswordResetToken;
 import com.example.BookRental.repo.RoleRepo;
@@ -18,14 +19,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
@@ -43,20 +40,20 @@ public class UserController {
     private final UserConverter userConverter;
     private final EmailService emailService;
     private final PasswordResetTokenService passwordResetTokenService;
+    private final CheckValidation validation;
 
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@Valid @RequestBody UserDto userDto, BindingResult result) {
-        checkValidation(result);
+        validation.checkValidation(result);
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         return userService.createUser(userDto);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto, BindingResult result) {
-        checkValidation(result);
+        validation.checkValidation(result);
         String password = loginDto.getPassword();
         this.authenticate(loginDto.getEmail(), password);
-//        UserDetails userDetails = this.customUserDetailService.loadUserByUsername(loginDto.getEmail());
         UserDto user = userConverter.toDto(this.userRepo.findByEmail(loginDto.getEmail()).get());
         String token = jwtHelper.generateToken(new CustomUserDetail(user, roleRepo));
         String bearerToken = "Bearer " + token;
@@ -65,7 +62,7 @@ public class UserController {
 
     @PostMapping("/resetPassword")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetDto passwordResetDto, @RequestParam("token") String token, BindingResult result) {
-        checkValidation(result);
+        validation.checkValidation(result);
         if (!passwordResetDto.getPassword().equals(passwordResetDto.getConfirmPassword())) {
             throw new CustomException("Password and Confirm Password does not match");
         }
@@ -75,7 +72,7 @@ public class UserController {
 
     @PostMapping("/resetPasswordRequest")
     public ResponseEntity<?> resetPasswordEmailSend(@Valid @RequestBody PasswordResetTokenDto passwordResetTokenDto, BindingResult result) {
-        checkValidation(result);
+        validation.checkValidation(result);
         PasswordResetToken passwordResetToken = this.passwordResetTokenService.generatePasswordResetToken(passwordResetTokenDto);
         sendEmail(passwordResetToken, passwordResetTokenDto.getEmail());
         return new ResponseEntity<>("Reset Token Sent Successfully", HttpStatus.OK);
@@ -93,15 +90,5 @@ public class UserController {
         }
     }
 
-    private void checkValidation(BindingResult result) {
-        if (result.hasErrors()) {
-            List<String> message = new ArrayList<>();
-            List<FieldError> errors = result.getFieldErrors();
 
-            for (FieldError error : errors) {
-                message.add(error.getDefaultMessage());
-            }
-            throw new CustomException(message);
-        }
-    }
 }

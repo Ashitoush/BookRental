@@ -1,0 +1,29 @@
+[33mcommit 5e6b670371564150f9089c4ba97e857086c250af[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: ashitoush <ashitoushrawal@gmail.com>
+Date:   Sat Jul 1 10:00:30 2023 +0545
+
+    Made a thread for sending mails to reduce the delay in application
+
+[33mcommit 170cff769ac911ac925912f09a9fdd3da94f5cc3[m
+Author: ashitoush <ashitoushrawal@gmail.com>
+Date:   Thu Jun 29 13:01:10 2023 +0545
+
+    Added Excel file import and export, Jwt Authentication implementation and password reset feature with mail
+
+[33mcommit 9246d643408f842daa0d36ea030ab363069bb3b7[m
+Author: ashitoush <ashitoushrawal@gmail.com>
+Date:   Mon Jun 26 10:08:10 2023 +0545
+
+    Update in the Book service impl file for deletion
+
+[33mcommit a0dde851fea0d1b8413f085acf1fb1c2a2359d26[m
+Author: ashitoush <ashitoushrawal@gmail.com>
+Date:   Sun Jun 25 13:06:51 2023 +0545
+
+    Handled the update and delete features issue
+
+[33mcommit c247050c1abf72c93c3935806c87e20744d31048[m
+Author: ashitoush <ashitoushrawal@gmail.com>
+Date:   Sun Jun 25 08:53:21 2023 +0545
+
+    First Commit

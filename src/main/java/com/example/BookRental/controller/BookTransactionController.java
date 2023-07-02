@@ -2,8 +2,7 @@ package com.example.BookRental.controller;
 
 import com.example.BookRental.dto.BookTransactionDto;
 import com.example.BookRental.dto.TransactionDto;
-import com.example.BookRental.exception.CustomException;
-import com.example.BookRental.model.BookTransaction;
+import com.example.BookRental.helper.CheckValidation;
 import com.example.BookRental.model.RENT_TYPE;
 import com.example.BookRental.service.BookTransactionService;
 import jakarta.validation.Valid;
@@ -15,13 +14,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -29,10 +26,11 @@ import java.util.List;
 public class BookTransactionController {
 
     private final BookTransactionService bookTransactionService;
+    private final CheckValidation validation;
 
 //    @PostMapping("/create")
 //    public ResponseEntity<?> insertBookTransaction(@Valid @RequestBody BookTransactionDto bookTransactionDto, BindingResult result) {
-//        checkValidation(result);
+//        validation.checkValidation(result);
 //
 //        return bookTransactionService.insertBookTransaction(bookTransactionDto);
 //    }
@@ -51,7 +49,7 @@ public class BookTransactionController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateBookTransaction(@PathVariable("id") Long id, @Valid @RequestBody TransactionDto bookTransactionDto, BindingResult result) {
-        checkValidation(result);
+        validation.checkValidation(result);
         bookTransactionDto.setId(id);
         return bookTransactionService.updateBookTransaction(bookTransactionDto);
     }
@@ -65,7 +63,7 @@ public class BookTransactionController {
     @PostMapping("/rentBook")
     @PreAuthorize("hasAuthority('LIBRARIAN')")
     public ResponseEntity<?> rentBook(@Valid @RequestBody BookTransactionDto bookTransactionDto, BindingResult result) {
-        checkValidation(result);
+        validation.checkValidation(result);
         bookTransactionDto.setRentStatus(RENT_TYPE.RENT);
         bookTransactionDto.setFromDate(LocalDate.now());
         return bookTransactionService.rentBookTransaction(bookTransactionDto);
@@ -94,17 +92,5 @@ public class BookTransactionController {
     @PreAuthorize("hasAuthority('LIBRARIAN')")
     public ResponseEntity<?> insertFromExcel(@RequestParam("file")MultipartFile file) {
         return bookTransactionService.insertFromExcel(file);
-    }
-
-    private void checkValidation(BindingResult result) {
-        if (result.hasErrors()) {
-            List<String> message = new ArrayList<>();
-            List<FieldError> errors = result.getFieldErrors();
-
-            for (FieldError error : errors) {
-                message.add(error.getDefaultMessage());
-            }
-            throw new CustomException(message);
-        }
     }
 }

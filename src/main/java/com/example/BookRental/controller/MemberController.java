@@ -1,18 +1,15 @@
 package com.example.BookRental.controller;
 
 import com.example.BookRental.dto.MemberDto;
-import com.example.BookRental.exception.CustomException;
+import com.example.BookRental.helper.CheckValidation;
 import com.example.BookRental.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -20,12 +17,12 @@ import java.util.List;
 public class MemberController {
 
     private final MemberService memberService;
+    private final CheckValidation validation;
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> insertMember(@Valid @RequestBody MemberDto memberDto, BindingResult result) {
-        checkValidation(result);
-
+        validation.checkValidation(result);
         return memberService.insertMember(memberDto);
     }
 
@@ -44,8 +41,7 @@ public class MemberController {
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> updateMember(@PathVariable("id") Long id, @Valid @RequestBody MemberDto memberDto, BindingResult result) {
-        checkValidation(result);
-
+        validation.checkValidation(result);
         memberDto.setId(id);
         return memberService.updateMember(memberDto);
     }
@@ -54,17 +50,5 @@ public class MemberController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> deleteMember(@PathVariable("id") Long id) {
         return memberService.deleteMember(id);
-    }
-
-    private void checkValidation(BindingResult result) {
-        if (result.hasErrors()) {
-            List<String> message = new ArrayList<>();
-            List<FieldError> fieldErrorList = result.getFieldErrors();
-
-            for (FieldError fieldError : fieldErrorList) {
-                message.add(fieldError.getDefaultMessage());
-            }
-            throw new CustomException(message);
-        }
     }
 }

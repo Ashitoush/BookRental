@@ -1,18 +1,15 @@
 package com.example.BookRental.controller;
 
 import com.example.BookRental.dto.AuthorDto;
-import com.example.BookRental.exception.CustomException;
+import com.example.BookRental.helper.CheckValidation;
 import com.example.BookRental.service.AuthorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -20,11 +17,12 @@ import java.util.List;
 public class AuthorController {
 
     private final AuthorService authorService;
+    private final CheckValidation validation;
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> insertAuthor(@Valid @RequestBody AuthorDto authorDto, BindingResult result) {
-        checkValidation(result);
+        validation.checkValidation(result);
         return authorService.insertAuthor(authorDto);
     }
 
@@ -43,7 +41,7 @@ public class AuthorController {
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> updateAuthor(@PathVariable("id") Long id,@Valid @RequestBody AuthorDto authorDto, BindingResult result) {
-        checkValidation(result);
+        validation.checkValidation(result);
         authorDto.setId(id);
         return authorService.updateAuthor(authorDto);
     }
@@ -54,15 +52,4 @@ public class AuthorController {
         return authorService.deleteAuthor(id);
     }
 
-    private void checkValidation(BindingResult result) {
-        if (result.hasErrors()) {
-            List<String> message = new ArrayList<>();
-            List<FieldError> fieldErrorList = result.getFieldErrors();
-
-            for (FieldError fieldError : fieldErrorList) {
-                message.add(fieldError.getDefaultMessage());
-            }
-            throw new CustomException(message);
-        }
-    }
 }

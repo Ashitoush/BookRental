@@ -1,19 +1,23 @@
 package com.example.BookRental.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
+
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CategoryDto {
+public class BookResponseDto implements Serializable {
     private Long id;
-    @NotBlank(message = "{category.name.not.empty}")
     private String name;
-    @NotBlank(message = "{category.desc.not.empty}")
-    private String description;
+    private Integer noOfPages;
+    private String isbn;
+    private Double rating;
+    private Integer stockCount;
+    private String photo;
 }

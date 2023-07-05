@@ -16,15 +16,15 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class BookTransactionDto {
     private Long id;
-    @NotBlank(message = "Code cannot be empty")
+    @NotBlank(message = "{bookTransaction.code.not.empty}")
     private String code;
     private LocalDate fromDate;
     private LocalDate toDate;
-    @NotNull(message = "Days cannot be empty")
+    @NotNull(message = "{bookTransaction.days.not.empty}")
     private Long days;
     private RENT_TYPE rentStatus;
-    @NotNull(message = "Book cannot be null")
+    @NotNull(message = "{book.not.null}")
     private Long bookId;
-    @NotNull(message = "Member cannot be null")
+    @NotNull(message = "{member.not.null}")
     private Long memberId;
 }

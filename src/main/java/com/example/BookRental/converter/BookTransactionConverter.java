@@ -2,6 +2,7 @@ package com.example.BookRental.converter;
 
 import com.example.BookRental.config.CustomMessageSource;
 import com.example.BookRental.dto.BookTransactionDto;
+import com.example.BookRental.dto.BookTransactionResponseDto;
 import com.example.BookRental.exception.CustomException;
 import com.example.BookRental.mapper.MemberMapper;
 import com.example.BookRental.model.Book;
@@ -81,6 +82,37 @@ public class BookTransactionConverter {
             bookTransactionDtoList.add(bookTransactionDto);
         }
         return bookTransactionDtoList;
+    }
+
+    public List<BookTransaction> toEntity(List<BookTransactionResponseDto> bookTransactionResponseDtoList) {
+        List<BookTransaction> bookTransactionList = new ArrayList<>();
+
+        for (BookTransactionResponseDto bookTransactionResponseDto : bookTransactionResponseDtoList) {
+            BookTransaction bookTransaction = new BookTransaction();
+
+            Optional<Book> book = bookRepo.findById(bookTransactionResponseDto.getBook().getId());
+            if (!book.isPresent()) {
+//            throw new CustomException("Book ID: " + bookTransactionDto.getBookId() + " not found");
+                throw new CustomException(messageSource.get("book.not.found"));
+            }
+
+            Member member = memberMapper.getMemberById(bookTransactionResponseDto.getMember().getId());
+            if(member == null) {
+//            throw new CustomException("Member ID: " + bookTransactionDto.getMemberId() + " not found");
+                throw new CustomException(messageSource.get("member.not.found"));
+            }
+
+            bookTransaction.setId(bookTransactionResponseDto.getId());
+            bookTransaction.setCode(bookTransactionResponseDto.getCode());
+            bookTransaction.setFromDate(bookTransactionResponseDto.getFromDate());
+            bookTransaction.setToDate(bookTransactionResponseDto.getToDate());
+            bookTransaction.setRentStatus(bookTransactionResponseDto.getRentStatus());
+            bookTransaction.setBook(book.get());
+            bookTransaction.setMember(member);
+
+            bookTransactionList.add(bookTransaction);
+        }
+        return bookTransactionList;
     }
 
 }

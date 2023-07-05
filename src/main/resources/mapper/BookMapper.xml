@@ -44,9 +44,9 @@
         SELECT id, isbn, name, no_of_pages, photo, published_date, rating, stock_count FROM tbl_book
     </select>
 
-<!--    <select id="getBookById" parameterType="long" resultType="com.example.BookRental.model.Book" resultMap="BookResult">-->
-<!--        SELECT id, isbn, name, no_of_pages, photo, published_date, rating, stock_count FROM tbl_book WHERE id = #{id}-->
-<!--    </select>-->
+    <select id="getBookById" parameterType="long" resultType="com.example.BookRental.model.Book" resultMap="BookResult">
+        SELECT id, isbn, name, no_of_pages, photo, published_date, rating, stock_count FROM tbl_book WHERE id = #{id}
+    </select>
 
     <update id="updateBook" parameterType="com.example.BookRental.model.Book">
         UPDATE tbl_book SET(isbn, name, no_of_pages, photo, published_date, rating, stock_count)

@@ -6,6 +6,8 @@ public class AppConstant {
             "/user/create",
             "/user/hello",
             "/bookTransaction/generateReport",
+            "/bookTransaction/generateReportWithFilter",
+            "/bookTransaction/reportDataWithFilter/**",
             "/user/resetPasswordRequest",
             "/user/resetPassword/**",
             "/bookTransaction/generateReport"

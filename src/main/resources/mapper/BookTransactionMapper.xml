@@ -4,35 +4,46 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.BookRental.mapper.BookTransactionMapper">
 
-    <resultMap id="BookTransactionResult" type="com.example.BookRental.model.BookTransaction">
-        <id column="id" property="id" />
-        <result column="code" property="code" />
-        <result column="from_date" property="fromDate" />
-        <result column="rent_status" property="rentStatus" />
-        <result column="to_date" property="toDate" />
+    <resultMap id="BookResponse" type="com.example.BookRental.dto.BookResponseDto" autoMapping="true">
+        <id property="id" column="id"/>
+    </resultMap>
 
-        <association property="book" javaType="com.example.BookRental.model.Book">
-            <id column="id" property="id"/>
-            <result column="isbn" property="isbn"/>
-            <result column="name" property="name"/>
-            <result column="no_of_pages" property="noOfPages"/>
-            <result column="photo" property="photo"/>
-            <result column="published_date" property="publishedDate"/>
-            <result column="rating" property="rating"/>
-            <result column="stock_count" property="stockCount"/>
+    <resultMap id="MemberResponse" type="com.example.BookRental.dto.MemberResponseDto" autoMapping="true">
+        <id property="id" column="id"/>
+    </resultMap>
+
+    <resultMap id="BookTransactionResult" type="com.example.BookRental.dto.BookTransactionResponseDto" autoMapping="true">
+        <id column="id" property="id"/>
+
+        <association property="book" resultMap="BookResponse" columnPrefix="br_">
         </association>
 
-        <association property="member" javaType="com.example.BookRental.model.Member">
-            <id column="id" property="id" />
-            <result column="address" property="address" />
-            <result column="email" property="email" />
-            <result column="mobile_no" property="mobileNo" />
-            <result column="name" property="name" />
+        <association property="member" resultMap="MemberResponse" columnPrefix="mr_">
         </association>
     </resultMap>
 
+    <select id="getAllBookTransactionWithFilter" resultMap="BookTransactionResult">
+        SELECT tbt.id as "id",
+            tbt.code as "code",
+            tbt.from_date as "fromDate",
+            tbt.rent_status as "rentStatus",
+            tbt.to_date as "toDate",
+            tb.id as "br_id",
+            tb.isbn as "br_isbn",
+            tb.name as "br_name",
+            tb.no_of_pages as "br_noOfPages",
+            tb.photo as "br_photo",
+            tb.rating as "br_rating",
+            tb.stock_count as "br_stockCount",
+            tm.id as "mr_id",
+            tm.address as "mr_address",
+            tm.email as "mr_email",
+            tm.mobile_no as "mr_mobileNo",
+            tm.name as "mr_name"
+        FROM tbl_book_transaction as tbt
+        INNER JOIN tbl_member tm on tbt.member_id = tm.id
+        INNER JOIN tbl_book tb on tb.id = tbt.book_id
+        WHERE tm.name LIKE CONCAT(#{searchParam},'%')
+    </select>
 
-    <insert id="insertBookTransaction" parameterType="com.example.BookRental.model.BookTransaction">
-        INSERT INTO tbl_book_transaction
-    </insert>
 </mapper>

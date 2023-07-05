@@ -2,7 +2,7 @@ package com.example.BookRental.controller;
 
 import com.example.BookRental.dto.BookTransactionDto;
 import com.example.BookRental.dto.TransactionDto;
-import com.example.BookRental.helper.CheckValidation;
+import com.example.BookRental.exception.CustomException;
 import com.example.BookRental.model.RENT_TYPE;
 import com.example.BookRental.service.BookTransactionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,7 +26,6 @@ import java.time.LocalDate;
 public class BookTransactionController {
 
     private final BookTransactionService bookTransactionService;
-    private final CheckValidation validation;
 
 //    @PostMapping("/create")
 //    public ResponseEntity<?> insertBookTransaction(@Valid @RequestBody BookTransactionDto bookTransactionDto, BindingResult result) {
@@ -49,8 +47,7 @@ public class BookTransactionController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateBookTransaction(HttpServletRequest request, @PathVariable("id") Long id, @Valid @RequestBody TransactionDto bookTransactionDto, BindingResult result) {
-        validation.checkValidation(result);
+    public ResponseEntity<?> updateBookTransaction(HttpServletRequest request, @PathVariable("id") Long id, @Valid @RequestBody TransactionDto bookTransactionDto) {
         bookTransactionDto.setId(id);
         return bookTransactionService.updateBookTransaction(bookTransactionDto);
     }
@@ -63,8 +60,7 @@ public class BookTransactionController {
 
     @PostMapping("/rentBook")
     @PreAuthorize("hasAuthority('LIBRARIAN')")
-    public ResponseEntity<?> rentBook(@Valid @RequestBody BookTransactionDto bookTransactionDto, BindingResult result) {
-        validation.checkValidation(result);
+    public ResponseEntity<?> rentBook(@Valid @RequestBody BookTransactionDto bookTransactionDto) {
         bookTransactionDto.setRentStatus(RENT_TYPE.RENT);
         bookTransactionDto.setFromDate(LocalDate.now());
         return bookTransactionService.rentBookTransaction(bookTransactionDto);
@@ -82,6 +78,28 @@ public class BookTransactionController {
     public ResponseEntity<Resource> generateReport() {
         String fileName = "Book Transaction.xlsx";
         InputStreamResource inputStreamResource = new InputStreamResource(bookTransactionService.generateReport());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=" + fileName)
+                .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+                .body(inputStreamResource);
+    }
+
+    @GetMapping("/reportDataWithFilter/{searchParam}")
+    public ResponseEntity<?> reportDataWithFilter(@PathVariable String searchParam) {
+        if (searchParam.isEmpty()) {
+            throw new CustomException("No parameter passed for search");
+        }
+        return bookTransactionService.reportDataWithFilter(searchParam);
+    }
+
+    @GetMapping("/generateReportWithFilter")
+    public ResponseEntity<Resource> generateReportWithFilter(@RequestParam("searchParam") String searchParam) {
+        if (searchParam.isEmpty()) {
+            throw new CustomException("No Parameter passed for search");
+        }
+        String fileName = "Book Transaction.xlsx";
+        InputStreamResource inputStreamResource = new InputStreamResource(bookTransactionService.generateReportWithFilter(searchParam));
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=" + fileName)

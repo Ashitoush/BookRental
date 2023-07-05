@@ -41,7 +41,6 @@ public class AuthorServiceImpl implements AuthorService {
         }
 
         Author author = authorConverter.toEntity(authorDto, bookList);
-
         Integer result = authorMapper.insertAuthor(author);
 
         if (result > 0) {

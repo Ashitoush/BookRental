@@ -8,10 +8,10 @@ import lombok.Setter;
 @Setter
 @Getter
 public class LoginDto {
-    @NotBlank(message = "Email cannot be empty")
-    @Email(message = "Invalid Email Format")
+    @NotBlank(message = "{email.not.empty}")
+    @Email(message = "{email.invalid}")
     private String email;
 
-    @NotBlank(message = "Message cannot be empty")
+    @NotBlank(message = "{password.not.empty}")
     private String password;
 }

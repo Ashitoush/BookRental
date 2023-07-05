@@ -17,11 +17,11 @@ import java.util.List;
 @NoArgsConstructor
 public class AuthorDto {
     private Long id;
-    @NotBlank(message = "Name must not be empty")
+    @NotBlank(message = "{name.not.empty}")
     private String name;
-    @Email(message = "Invalid Email")
+    @Email(message = "{email.invalid}")
     private String email;
-    @Size(min = 10, max = 10, message = "Phone Number must be 10 characters")
+    @Size(min = 10, max = 10, message = "{phone.length}")
     private String mobileNumber;
     private List<Long> bookIds;
 }

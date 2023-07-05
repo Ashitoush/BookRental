@@ -6,7 +6,6 @@ import com.example.BookRental.config.CustomUserDetailService;
 import com.example.BookRental.converter.UserConverter;
 import com.example.BookRental.dto.*;
 import com.example.BookRental.exception.CustomException;
-import com.example.BookRental.helper.CheckValidation;
 import com.example.BookRental.helper.JwtHelper;
 import com.example.BookRental.model.PasswordResetToken;
 import com.example.BookRental.repo.RoleRepo;
@@ -16,13 +15,11 @@ import com.example.BookRental.service.PasswordResetTokenService;
 import com.example.BookRental.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.connector.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.CompletableFuture;
@@ -42,19 +39,16 @@ public class UserController {
     private final UserConverter userConverter;
     private final EmailService emailService;
     private final PasswordResetTokenService passwordResetTokenService;
-    private final CheckValidation validation;
     private final CustomMessageSource messageSource;
 
     @PostMapping("/create")
-    public ResponseEntity<?> createUser(@Valid @RequestBody UserDto userDto, BindingResult result) {
-        validation.checkValidation(result);
+    public ResponseEntity<?> createUser(@Valid @RequestBody UserDto userDto) {
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         return userService.createUser(userDto);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto, BindingResult result) {
-        validation.checkValidation(result);
+    public ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto) {
         String password = loginDto.getPassword();
         this.authenticate(loginDto.getEmail(), password);
         UserDto user = userConverter.toDto(this.userRepo.findByEmail(loginDto.getEmail()).get());
@@ -64,8 +58,7 @@ public class UserController {
     }
 
     @PostMapping("/resetPassword")
-    public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetDto passwordResetDto, @RequestParam("token") String token, BindingResult result) {
-        validation.checkValidation(result);
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetDto passwordResetDto, @RequestParam("token") String token) {
         if (!passwordResetDto.getPassword().equals(passwordResetDto.getConfirmPassword())) {
             throw new CustomException(messageSource.get("password.confirm.dont.match"));
         }
@@ -74,8 +67,7 @@ public class UserController {
     }
 
     @PostMapping("/resetPasswordRequest")
-    public ResponseEntity<?> resetPasswordEmailSend(@Valid @RequestBody PasswordResetTokenDto passwordResetTokenDto, BindingResult result) {
-        validation.checkValidation(result);
+    public ResponseEntity<?> resetPasswordEmailSend(@Valid @RequestBody PasswordResetTokenDto passwordResetTokenDto) {
         PasswordResetToken passwordResetToken = this.passwordResetTokenService.generatePasswordResetToken(passwordResetTokenDto);
         sendEmail(passwordResetToken, passwordResetTokenDto.getEmail());
         return new ResponseEntity<>(messageSource.get("reset.token.success"), HttpStatus.OK);

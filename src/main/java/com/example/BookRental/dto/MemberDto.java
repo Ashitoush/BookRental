@@ -16,11 +16,11 @@ import java.util.List;
 @NoArgsConstructor
 public class MemberDto {
     private Long id;
-    @Email(message = "Invalid Email Format for Member")
+    @Email(message = "{email.invalid}")
     private String email;
-    @NotBlank(message = "Member Name cannot be empty")
+    @NotBlank(message = "{member.not.null}")
     private String name;
-    @Size(min = 10, max = 10, message = "Mobile Number must be of length 10")
+    @Size(min = 10, max = 10, message = "{phone.length}")
     private String mobileNo;
     private String address;
     private List<Long> bookTransactionIds;

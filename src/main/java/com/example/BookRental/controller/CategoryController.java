@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -21,8 +20,7 @@ public class CategoryController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> insertCategory(@Valid @RequestBody CategoryDto categoryDto, BindingResult result) {
-        validation.checkValidation(result);
+    public ResponseEntity<?> insertCategory(@Valid @RequestBody CategoryDto categoryDto) {
         return categoryService.insertCategory(categoryDto);
     }
 
@@ -40,8 +38,7 @@ public class CategoryController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> updateCategory(@PathVariable("id") Long id, @Valid @RequestBody CategoryDto categoryDto, BindingResult result) {
-        validation.checkValidation(result);
+    public ResponseEntity<?> updateCategory(@PathVariable("id") Long id, @Valid @RequestBody CategoryDto categoryDto) {
         categoryDto.setId(id);
         return categoryService.updateCategory(categoryDto);
     }

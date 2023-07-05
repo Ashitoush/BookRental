@@ -17,10 +17,10 @@ public class UserDto {
 
     private String name;
 
-    @Email(message = "Email Invalid")
+    @Email(message = "{email.invalid}")
     private String email;
 
-    @Size(min = 6, message = "Password length must be at least 6 character long")
+    @Size(min = 6, message = "{password.length.short}")
     private String password;
 
     private String role;

@@ -25,7 +25,8 @@ import java.util.stream.Collectors;
 @Service
 public class JwtHelper {
     private CustomUserDetailService customUserDetailService;
-    SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+//    SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    String secretKey = "[BA63f6bed1BA63f6bed1BA63f6bed1BA63f6bed1BA63f6bed1";
 
     public String generateToken(CustomUserDetail principal) {
 

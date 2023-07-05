@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class PasswordResetTokenDto {
-    @NotEmpty(message = "Email cannot be empty")
-    @Email(message = "Invalid Email Format")
+    @NotEmpty(message = "{email.not.empty}")
+    @Email(message = "{email.invalid}")
     private String email;
 }

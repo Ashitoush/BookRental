@@ -10,11 +10,11 @@ import lombok.Setter;
 @Setter
 @Getter
 public class PasswordResetDto {
-    @NotEmpty(message = "Password Field Cannot be Empty")
-    @Size(min = 6, message = "Password length must be at least 6 character long")
+    @NotEmpty(message = "{password.not.empty}")
+    @Size(min = 6, message = "{password.length.short}")
     private String password;
 
-    @NotEmpty(message = "Confirm Password Field Cannot be Empty")
-    @Size(min = 6, message = "Password length must be at least 6 character long")
+    @NotEmpty(message = "{password.confirm.not.empty}")
+    @Size(min = 6, message = "{password.length.short}")
     private String confirmPassword;
 }

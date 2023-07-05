@@ -3,9 +3,11 @@ package com.example.BookRental.service.ServiceImpl;
 import com.example.BookRental.config.CustomMessageSource;
 import com.example.BookRental.converter.BookTransactionConverter;
 import com.example.BookRental.dto.BookTransactionDto;
+import com.example.BookRental.dto.BookTransactionResponseDto;
 import com.example.BookRental.dto.TransactionDto;
 import com.example.BookRental.exception.CustomException;
 import com.example.BookRental.helper.ExcelHelper;
+import com.example.BookRental.mapper.BookTransactionMapper;
 import com.example.BookRental.mapper.MemberMapper;
 import com.example.BookRental.model.Book;
 import com.example.BookRental.model.BookTransaction;
@@ -15,18 +17,15 @@ import com.example.BookRental.repo.BookRepo;
 import com.example.BookRental.repo.BookTransactionRepo;
 import com.example.BookRental.service.BookTransactionService;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.ss.formula.ptg.MemErrPtg;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -37,6 +36,7 @@ public class BookTransactionServiceImpl implements BookTransactionService {
     private final BookTransactionConverter bookTransactionConverter;
     private final BookRepo bookRepo;
     private final MemberMapper memberMapper;
+    private final BookTransactionMapper bookTransactionMapper;
     private final ExcelHelper excelHelper;
     private final CustomMessageSource messageSource;
 
@@ -172,6 +172,28 @@ public class BookTransactionServiceImpl implements BookTransactionService {
         List<BookTransaction> bookTransactionList = bookTransactionRepo.findAll();
         ByteArrayInputStream inputStream = excelHelper.createExcel(bookTransactionList);
 
+        return inputStream;
+    }
+
+    @Override
+    public ResponseEntity<Object> reportDataWithFilter(String searchParam) {
+        List<BookTransactionResponseDto> bookTransactionList = null;
+        try {
+            bookTransactionList = bookTransactionMapper.getAllBookTransactionWithFilter(searchParam);
+        } catch (Exception e) {
+            throw new CustomException(Arrays.toString(e.getStackTrace()));
+        }
+        return new ResponseEntity<>(bookTransactionList, HttpStatus.OK);
+    }
+
+    @Override
+    public ByteArrayInputStream generateReportWithFilter(String searchParam) {
+        List<BookTransactionResponseDto> bookTransactionResponseDtoList = bookTransactionMapper.getAllBookTransactionWithFilter(searchParam);
+        if (bookTransactionResponseDtoList.isEmpty()) {
+            throw new CustomException(messageSource.get("bookTransaction.not.found"));
+        }
+        List<BookTransaction> bookTransactionList = bookTransactionConverter.toEntity(bookTransactionResponseDtoList);
+        ByteArrayInputStream inputStream = excelHelper.createExcel(bookTransactionList);
         return inputStream;
     }
 

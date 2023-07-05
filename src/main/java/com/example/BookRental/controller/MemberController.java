@@ -21,8 +21,7 @@ public class MemberController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> insertMember(@Valid @RequestBody MemberDto memberDto, BindingResult result) {
-        validation.checkValidation(result);
+    public ResponseEntity<?> insertMember(@Valid @RequestBody MemberDto memberDto) {
         return memberService.insertMember(memberDto);
     }
 
@@ -40,8 +39,7 @@ public class MemberController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> updateMember(@PathVariable("id") Long id, @Valid @RequestBody MemberDto memberDto, BindingResult result) {
-        validation.checkValidation(result);
+    public ResponseEntity<?> updateMember(@PathVariable("id") Long id, @Valid @RequestBody MemberDto memberDto) {
         memberDto.setId(id);
         return memberService.updateMember(memberDto);
     }
